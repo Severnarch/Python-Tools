@@ -5,7 +5,7 @@ import tkinter as tk, time as _time, math, tkinter.font as tkf, os, psutil, keyb
 app = tk.Tk()
 app.geometry("140x46")
 app.config(bg="#000000")
-app.title("Run Timer | 1.0.3")
+app.title("Run Timer | 1.0.4")
 app.attributes("-topmost", True)
 app.resizable(False, False)
 
@@ -58,7 +58,7 @@ def loop():
 def setstate(ntate):
 	global state, reseq
 	lbl.config(text=time(_time.time()-start))
-	if state != 0 and ntate == 0:
+	if state == 0 and ntate == 1:
 		reseq = True
 	state = ntate
 
