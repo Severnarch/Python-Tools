@@ -5,7 +5,7 @@ import tkinter as tk, time as _time, math, tkinter.font as tkf, os, psutil, keyb
 app = tk.Tk()
 app.geometry("140x46")
 app.config(bg="#000000")
-app.title("Run Timer | 1.0.0")
+app.title("Run Timer | 1.0.1")
 app.attributes("-topmost", True)
 app.resizable(False, False)
 
@@ -32,17 +32,25 @@ def time(time:float=0.01):
 	return f"{hr}:{mn}:{ss}.{ms}"
 
 start = _time.time()
+reseq = False
 state = 0
 def loop():
+	global reseq, start
 	stxt = ""
+	if reseq:
+		start = -1
+		reseq = False
 	match state:
 		case 0:
 			lbl.config(fg="#ff0000")
 			stm.config(fg="#ff0000")
 			stxt = "STOPPED"
+			start = -1
 		case 1:
 			lbl.config(fg="#00ff00")
 			stm.config(fg="#00ff00")
+			if start == -1:
+				start = _time.time()
 			lbl.config(text=time(_time.time()-start))
 			stxt = "ACTIVE "
 		case 2:
@@ -57,9 +65,10 @@ def loop():
 	app.after(50, loop)
 
 def setstate(ntate):
-	global state, start
+	global state, start, reseq
 	if state != 0 and ntate == 0:
-		start = _time.time()
+		start = -1
+		reseq = True
 	state = ntate
 keyboard.add_hotkey("Pause", lambda:setstate(1 if state == 2 else 2))
 keyboard.add_hotkey("End",   lambda:setstate(0 if state == 1 or state == 2 else 1))
