@@ -5,7 +5,7 @@ import tkinter as tk, time as _time, math, tkinter.font as tkf, os, psutil, keyb
 app = tk.Tk()
 app.geometry("140x46")
 app.config(bg="#000000")
-app.title("Run Timer | 1.0.4")
+app.title("Run Timer | 1.0.5")
 app.attributes("-topmost", True)
 app.resizable(False, False)
 
@@ -20,18 +20,21 @@ stm = tk.Label(app, text="STOPPED%sMB"%(" "*10), font=hfnt, width=20, fg="#ff000
 stm.place(x=0,y=22)
 
 def time(t:float=0.01):
-	ms = str(t).split(".")[1][0:2]
+	try:
+		ms = str(t).split(".")[1][0:2]
+	except IndexError:
+		ms = "00"
 	ss = str(math.floor(t%60))
 	mn = str(math.floor((t/60)%60))
 	hr = str(math.floor(((t/60)/60)%60))
 
 	return '%s:%s:%s.%s'%("0"+hr if len(hr) == 1 else hr,"0"+mn if len(mn) == 1 else mn,"0"+ss if len(ss) == 1 else ss,"0"+ms if len(ms) == 1 else ms)
 
-start = _time.time()
+durat = 0
 reseq = False
 state = 0
-def loop():
-	global reseq, start
+def loop(lt=_time.time()):
+	global reseq, durat
 	stxt = ""
 	match state:
 		case 0:
@@ -43,8 +46,8 @@ def loop():
 			stm.config(fg="#00ff00")
 			if reseq:
 				reseq = False
-				start = _time.time()
-			lbl.config(text=time(_time.time()-start))
+				durat = 0
+			lbl.config(text=time(durat))
 			stxt = "ACTIVE "
 		case 2:
 			lbl.config(fg="#ff7700")
@@ -53,11 +56,11 @@ def loop():
 	mem = str((psutil.Process().memory_full_info().rss/1024**2)/2*1.084).split(".")
 	mem = ("  ~"+mem[0] if int(mem[0])<10 else " ~"+mem[0] if int(mem[0])<100 else "~"+mem[0])+"."+mem[1][0:2]
 	stm.config(text=stxt+(" "*3)+str(mem)+"MB")
-	app.after(50, loop)
+	app.after(50, lambda: loop(_time.time()))
 
 def setstate(ntate):
 	global state, reseq
-	lbl.config(text=time(_time.time()-start))
+	lbl.config(text=time(durat))
 	if state == 0 and ntate == 1:
 		reseq = True
 	state = ntate
@@ -65,5 +68,12 @@ def setstate(ntate):
 keyboard.add_hotkey("Pause", lambda:setstate(1 if state == 2 else 2))
 keyboard.add_hotkey("End",   lambda:setstate(0 if state == 1 or state == 2 else 1))
 
+def timeloop():
+	global durat
+	if state == 1:
+		durat = durat + 0.01
+	app.after(10,timeloop)
+
+app.after(10, timeloop)
 app.after(50, loop)
 app.mainloop()
